@@ -7,6 +7,9 @@ import java.util.HashMap;
 import java.util.Scanner;
 
 public class Main extends JFrame {
+    public static final String INVENTORY_FILE_PATH = "src/main/resources/inventory.csv";
+
+
 
     // I initialize static variables to call things in multiple methods.
     static Scanner userInput = new Scanner(System.in);
@@ -88,7 +91,7 @@ public class Main extends JFrame {
     // THIS METHOD WILL READ THE FILE.
     public static void readTheFileFirst(){
 
-        try(BufferedReader readTheFile = new BufferedReader(new FileReader(logFile))){
+        try(BufferedReader readTheFile = new BufferedReader(new FileReader(INVENTORY_FILE_PATH))){
             String productLine;
             readTheFile.readLine();
 

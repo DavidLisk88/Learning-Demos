@@ -8,143 +8,187 @@ import javafx.stage.Stage;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
+import java.text.NumberFormat;
+import java.text.ParseException;
+import java.util.Locale;
+
 
 public class StoreAppGUI extends Application {
 
-    private TextArea outputArea;
-    private TextField newNameField;
-    private TextField newPriceField;
+    private List<Product> inventory = new ArrayList<>();
+    private TextArea outputArea = new TextArea();
+    private Scene mainScene, listScene, searchIdScene, searchPriceScene, addScene;
 
     @Override
     public void start(Stage primaryStage) {
-        Main.readTheFileFirst(); // Load inventory
+        Main.readTheFileFirst();
+        inventory = Main.inventory;
 
-        VBox layout = new VBox(15);
-        layout.setStyle("-fx-padding: 20; -fx-background-color: #f0f8ff;");
+        // MAIN MENU
+        VBox mainMenu = new VBox(10);
+        mainMenu.setStyle("-fx-padding: 20; -fx-alignment: center; -fx-background-color: #f0f0f0;");
 
         Label title = new Label("Store Inventory System");
         title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
+        Button listBtn = new Button("List All Products");
+        Button searchIdBtn = new Button("Search by ID");
+        Button searchPriceBtn = new Button("Search by Price Range");
+        Button addBtn = new Button("Add Product");
 
-        // Buttons
-        Button listButton = new Button("List All Products");
-        Button searchByIdButton = new Button("Search by ID");
-        Button searchByPriceButton = new Button("Search by Price Range");
-        Button addButton = new Button("Add Product");
+        listBtn.setOnAction(e -> primaryStage.setScene(listScene));
+        searchIdBtn.setOnAction(e -> primaryStage.setScene(searchIdScene));
+        searchPriceBtn.setOnAction(e -> primaryStage.setScene(searchPriceScene));
+        addBtn.setOnAction(e -> {
+            updateNextId();
+            primaryStage.setScene(addScene);
+        });
 
-        // Output area
-        outputArea = new TextArea();
-        outputArea.setEditable(false);
+        mainMenu.getChildren().addAll(title, listBtn, searchIdBtn, searchPriceBtn, addBtn);
+        mainScene = new Scene(mainMenu, 500, 400);
+
+        // LIST SCREEN
+        VBox listLayout = new VBox(10);
         outputArea.setPrefHeight(300);
-        outputArea.setStyle("-fx-control-inner-background: #e0f7fa; -fx-font-family: monospace;");
+        outputArea.setWrapText(true);
+        outputArea.setEditable(false);
+        ScrollPane scroll = new ScrollPane(outputArea);
+        scroll.setFitToWidth(true);
+        scroll.setPrefHeight(350);
 
-        // ID search
-        TextField idField = new TextField();
-        idField.setPromptText("Enter Product ID");
+        Button backFromList = new Button("Back");
+        backFromList.setOnAction(e -> primaryStage.setScene(mainScene));
+        listLayout.setStyle("-fx-padding: 20;");
+        listLayout.getChildren().addAll(new Label("All Products:"), scroll, backFromList);
+        listScene = new Scene(listLayout, 600, 500);
 
-        searchByIdButton.setOnAction(e -> {
-            try {
-                int id = Integer.parseInt(idField.getText());
-                Product found = null;
-                for (Product p : Main.inventory) {
-                    if (p.getId() == id) {
-                        found = p;
-                        break;
-                    }
-                }
-                outputArea.setText(found != null ? found.toString() : "Product not found.");
-            } catch (NumberFormatException ex) {
-                outputArea.setText("Invalid ID.");
-            }
-        });
-
-        // Price range search
-        TextField minField = new TextField();
-        minField.setPromptText("Min Price");
-        TextField maxField = new TextField();
-        maxField.setPromptText("Max Price");
-
-        searchByPriceButton.setOnAction(e -> {
-            try {
-                double min = Double.parseDouble(minField.getText());
-                double max = Double.parseDouble(maxField.getText());
-                List<Product> found = Main.searchByPrice(min, max);
-                outputArea.clear();
-                for (Product p : found) {
-                    outputArea.appendText(p.toString() + "\n");
-                }
-                if (found.isEmpty()) {
-                    outputArea.setText("No products found in that range.");
-                }
-            } catch (NumberFormatException ex) {
-                outputArea.setText("Invalid price range.");
-            }
-        });
-
-        // Add new product (auto ID)
-        newNameField = new TextField();
-        newNameField.setPromptText("Product Name");
-
-        newPriceField = new TextField();
-        newPriceField.setPromptText("Price");
-
-        addButton.setOnAction(e -> {
-            try {
-                String name = newNameField.getText();
-                double price = Double.parseDouble(newPriceField.getText());
-
-                int maxId = 0;
-                for (Product p : Main.inventory) {
-                    if (p.getId() > maxId) {
-                        maxId = p.getId();
-                    }
-                }
-                int newId = maxId + 1;
-
-                Product newProduct = new Product(newId, name, price);
-                Main.inventory.add(newProduct);
-                writeToCSV(newProduct);
-                outputArea.setText("Product added:\n" + newProduct);
-                newNameField.clear();
-                newPriceField.clear();
-            } catch (NumberFormatException ex) {
-                outputArea.setText("Invalid input.");
-            }
-        });
-
-        // List all products
-        listButton.setOnAction(e -> {
+        listBtn.setOnAction(e -> {
             outputArea.clear();
-            for (Product p : Main.inventory) {
+            for (Product p : inventory) {
                 outputArea.appendText(p.toString() + "\n");
             }
+            primaryStage.setScene(listScene);
         });
 
-        // Layout
-        layout.getChildren().addAll(
-                title, listButton,
-                new Label("Search by ID:"), idField, searchByIdButton,
-                new Label("Search by Price Range:"), minField, maxField, searchByPriceButton,
-                new Label("Add New Product (ID auto-generated):"),
-                newNameField, newPriceField, addButton,
-                outputArea
-        );
+        // SEARCH BY ID SCREEN
+        VBox searchIdLayout = new VBox(10);
+        TextField idInput = new TextField();
+        idInput.setPromptText("Enter Product ID");
+        TextArea idResult = new TextArea();
+        idResult.setEditable(false);
+        Button idSearch = new Button("Search");
+        Button backFromId = new Button("Back");
 
-        ScrollPane scrollPane = new ScrollPane(layout);
-        scrollPane.setFitToWidth(true);
+        idSearch.setOnAction(e -> {
+            try {
+                int id = Integer.parseInt(idInput.getText());
+                Product found = inventory.stream().filter(p -> p.getId() == id).findFirst().orElse(null);
+                idResult.setText(found != null ? found.toString() : "Product not found.");
+            } catch (NumberFormatException ex) {
+                idResult.setText("Invalid ID format.");
+            }
+        });
+        backFromId.setOnAction(e -> primaryStage.setScene(mainScene));
+        searchIdLayout.setStyle("-fx-padding: 20;");
+        searchIdLayout.getChildren().addAll(new Label("Search by ID:"), idInput, idSearch, idResult, backFromId);
+        searchIdScene = new Scene(searchIdLayout, 500, 400);
 
-        Scene scene = new Scene(scrollPane, 500, 650);
-        primaryStage.setScene(scene);
-        primaryStage.setTitle("Store Inventory");
+        // SEARCH BY PRICE SCREEN
+        VBox priceLayout = new VBox(10);
+        TextField minPrice = new TextField();
+        TextField maxPrice = new TextField();
+        minPrice.setPromptText("Min Price");
+        maxPrice.setPromptText("Max Price");
+        TextArea priceResult = new TextArea();
+        priceResult.setEditable(false);
+        Button priceSearch = new Button("Search");
+        Button backFromPrice = new Button("Back");
+
+        priceSearch.setOnAction(e -> {
+            try {
+                double min = Double.parseDouble(minPrice.getText());
+                double max = Double.parseDouble(maxPrice.getText());
+                List<Product> results = Main.searchByPrice(min, max);
+                priceResult.clear();
+                if (results.isEmpty()) {
+                    priceResult.setText("No products found.");
+                } else {
+                    for (Product p : results) {
+                        priceResult.appendText(p.toString() + "\n");
+                    }
+                }
+            } catch (NumberFormatException ex) {
+                priceResult.setText("Invalid price format.");
+            }
+        });
+
+        backFromPrice.setOnAction(e -> primaryStage.setScene(mainScene));
+        priceLayout.setStyle("-fx-padding: 20;");
+        priceLayout.getChildren().addAll(new Label("Search by Price Range:"), minPrice, maxPrice, priceSearch, priceResult, backFromPrice);
+        searchPriceScene = new Scene(priceLayout, 500, 450);
+
+        // ADD PRODUCT SCREEN
+        VBox addLayout = new VBox(10);
+        Label autoIdLabel = new Label("ID will be auto-generated");
+        TextField nameInput = new TextField();
+        TextField priceInput = new TextField();
+        nameInput.setPromptText("Product Name");
+        priceInput.setPromptText("Product Price");
+
+        Button addProduct = new Button("Add Product");
+        Label confirmation = new Label();
+        Button backFromAdd = new Button("Back");
+
+        addProduct.setOnAction(e -> {
+            try {
+                String name = nameInput.getText();
+                NumberFormat format = NumberFormat.getInstance(Locale.US);
+                Number number = format.parse(priceInput.getText());
+                double price = number.doubleValue();
+
+                int id = getNextId();
+                Product newProduct = new Product(id, name, price);
+                inventory.add(newProduct);
+                writeToCSV(newProduct);
+                confirmation.setText("Product added: " + newProduct);
+                nameInput.clear();
+                priceInput.clear();
+                updateNextId();
+            } catch (NumberFormatException | ParseException ex) {
+                confirmation.setText("Invalid price format.");
+            }
+        });
+
+
+        backFromAdd.setOnAction(e -> primaryStage.setScene(mainScene));
+        addLayout.setStyle("-fx-padding: 20;");
+        addLayout.getChildren().addAll(autoIdLabel, nameInput, priceInput, addProduct, confirmation, backFromAdd);
+        addScene = new Scene(addLayout, 500, 400);
+
+        // Show main scene
+        primaryStage.setScene(mainScene);
+        primaryStage.setTitle("Store Inventory System");
         primaryStage.show();
     }
 
+    private void updateNextId() {
+        int nextId = getNextId();
+        Label idLabel = (Label) ((VBox) addScene.getRoot()).getChildren().get(0);
+        idLabel.setText("Next Product ID: " + nextId);
+    }
+
+    private int getNextId() {
+        return inventory.stream().map(Product::getId).max(Comparator.naturalOrder()).orElse(0) + 1;
+    }
+
     private void writeToCSV(Product product) {
-        try (FileWriter writer = new FileWriter("inventory.csv", true)) {
-            writer.write(product.getId() + "|" + product.getName() + "|" + product.getPrice() + "\n");
+        try (FileWriter writer = new FileWriter(Main.INVENTORY_FILE_PATH, true)) {
+            writer.write(product.getId() + " | " + product.getName() + " | " + product.getPrice() + "\n");
         } catch (IOException e) {
-            outputArea.setText("Failed to write to file.");
+            System.out.println("Failed to write product to file.");
         }
     }
 
