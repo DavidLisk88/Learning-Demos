@@ -1,0 +1,10 @@
+----------------------------RANDOM NOTES---------------------------------
+
+^ String name = scanner.nextLine().trim().replaceAll("\\s", "")
+^ charAt(): Returns a character from a specific string. Most likely one that is split.
+^ Arrays.sort[]: Function to sort an array.
+^ new: Creates new objects, Scanners, etc.
+^ Encapsulation is wrapping data methods in a class.
+^ getName: Method for read access. (name is just an example of a variable that comes after "get".
+^ Overloading a method is using multiple methods with the same name but different parameters in that method.
+^ The purpose of a constructor is to initialize an object.

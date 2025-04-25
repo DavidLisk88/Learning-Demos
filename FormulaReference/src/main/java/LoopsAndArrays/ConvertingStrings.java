@@ -1,6 +1,4 @@
-package com.pluralsight;
-
-import java.util.regex.Pattern;
+package LoopsAndArrays;
 
 public class ConvertingStrings {
     public static void main(String[] args) {

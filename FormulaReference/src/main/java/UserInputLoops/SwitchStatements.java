@@ -1,4 +1,4 @@
-package com.pluralsight;
+package UserInputLoops;
 import java.util.Scanner;
 public class SwitchStatements {
     public static void main(String[] args) {

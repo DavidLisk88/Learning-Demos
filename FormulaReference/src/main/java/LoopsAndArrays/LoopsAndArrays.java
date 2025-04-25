@@ -1,4 +1,4 @@
-package com.pluralsight;
+package LoopsAndArrays;
 
 import java.util.Arrays;
 

@@ -1,4 +1,4 @@
-package com.pluralsight;
+package AllGeneral;
 
 import java.util.Scanner; // This lets us read what someone types on the keyboard
 

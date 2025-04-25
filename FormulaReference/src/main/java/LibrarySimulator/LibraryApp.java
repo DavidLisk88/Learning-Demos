@@ -6,7 +6,6 @@ public class LibraryApp {
     public static void main(String[] args) throws InterruptedException {
         // We create a user input scanner inside the main method.
         Scanner userInput = new Scanner(System.in);
-
         // Create an Array. This makes the list of 20 books.
         // Use the class "Book" to split the books
         Book[] availableBooks = new Book[20];
@@ -32,7 +31,6 @@ public class LibraryApp {
         availableBooks[17] = new Book(18, "ISBN: 1018", "The Bible");
         availableBooks[18] = new Book(19, "ISBN: 1019", "The Art of War");
         availableBooks[19] = new Book(20, "ISBN: 1020", "Dora the Explorer");
-
 
         // I created a boolean variable for the upcoming while loop
         boolean choosing = true;

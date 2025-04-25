@@ -134,8 +134,6 @@ public class Main extends JFrame {
 
                 }
 
-
-
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

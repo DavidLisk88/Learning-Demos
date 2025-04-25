@@ -1,4 +1,4 @@
-package com.pluralsight;
+package LoopsAndArrays;
 
 public class StringBuilding {
     public static void main(String[] args) {

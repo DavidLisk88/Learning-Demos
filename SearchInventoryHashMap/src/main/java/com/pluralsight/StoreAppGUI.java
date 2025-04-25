@@ -141,7 +141,7 @@ public class StoreAppGUI extends Application {
     }
 
     private void writeToCSV(Product product) {
-        try (FileWriter writer = new FileWriter("products.csv", true)) {
+        try (FileWriter writer = new FileWriter("inventory.csv", true)) {
             writer.write(product.getId() + "|" + product.getName() + "|" + product.getPrice() + "\n");
         } catch (IOException e) {
             outputArea.setText("Failed to write to file.");
