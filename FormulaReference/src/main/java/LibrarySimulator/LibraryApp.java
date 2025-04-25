@@ -188,7 +188,7 @@ public class LibraryApp {
 
                 // For myBook(users choice) attached to the "Book" class sorting through the array of "books".
                 for (Book myBook : books) {
-                    // If the ID of myBook is equal to a bookID thats available AND if the book is checked out, then the following statements will appear.
+                    // If the ID of myBook is equal to a bookID that's available AND if the book is checked out, then the following statements will appear.
                     if (myBook.getId() == bookId && myBook.isCheckedOut()) {
                         // We make sure the users input moves from the checkOut method to the checkIn method.
                         myBook.checkIn();
